@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermoScan AI | Industrial Temperature Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        industrial: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        danger: {
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        },
+                        warning: {
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        success: {
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-12">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="bg-industrial-600 p-3 rounded-lg mr-4">
+                    <i class="fas fa-industry text-3xl text-industrial-200"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">ThermoScan<span class="text-industrial-400">AI</span></h1>
+                    <p class="text-industrial-300 text-sm">Industrial Machine Temperature Monitoring</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="hidden md:block">
+                    <div class="flex items-center">
+                        <span class="status-indicator status-normal"></span>
+                        <span class="text-industrial-300">System Status: <span class="text-success-500 font-medium">Operational</span></span>
+                    </div>
+                    <div class="text-xs text-industrial-400 mt-1">Multi-Model Temperature Analysis</div>
+                </div>
+                <button id="settingsBtn" class="bg-industrial-600 hover:bg-industrial-500 text-white px-4 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-cog mr-2"></i> Settings
+                </button>
+            </div>
+        </header>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Main Camera Feed -->
+            <div class="lg:col-span-2">
+                <div class="industrial-card h-full">
+                    <div class="p-4 border-b border-industrial-700 flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-white">Machine Camera Feed</h2>
+                        <div class="flex space-x-2">
+                            <select id="modelSelector" class="bg-industrial-700 border border-industrial-600 text-white rounded px-3 py-1 text-sm">
+                                <option value="gemini">Gemini 1.5 Flash</option>
+                                <option value="qwen">Qwen2.5-VL-7B-Instruct</option>
+                            </select>
+                            <button id="captureBtn" class="bg-industrial-500 hover:bg-industrial-400 text-white px-3 py-1 rounded text-sm flex items-center">
+                                <i class="fas fa-camera mr-1"></i> Capture & Analyze
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="camera-feed h-96 flex items-center justify-center relative">
+                            <video id="cameraFeed" class="w-full h-full object-contain" autoplay playsinline></video>
+                            <canvas id="captureCanvas" class="hidden"></canvas>
+                            <div id="processingOverlay" class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden">
+                                <div class="text-center">
+                                    <div class="spinner"></div>
+                                    <p class="text-industrial-200 mt-2">Processing with <span id="processingModel">Gemini</span>...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center text-industrial-300 text-sm">
+                            <i class="fas fa-microchip mr-1"></i> Current Model: <span id="currentModelDisplay">Gemini 1.5 Flash</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Temperature Dashboard -->
+            <div class="industrial-card">
+                <div class="p-4 border-b border-industrial-700">
+                    <h2 class="text-xl font-bold text-white">Temperature Dashboard</h2>
+                </div>
+                <div class="p-4">
+                    <div class="flex flex-col items-center mb-6">
+                        <div class="text-industrial-300 mb-2">Current Temperature</div>
+                        <div id="currentTemp" class="temperature-display text-industrial-200">--°C</div>
+                        <div id="tempStatus" class="mt-2 px-3 py-1 rounded-full bg-industrial-700 text-industrial-300 text-sm">
+                            <span class="status-indicator"></span> No data
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="industrial-card bg-industrial-800 p-4 rounded-lg">
+                            <div class="text-industrial-400 text-sm mb-1">Maximum</div>
+                            <div id="maxTemp" class="text-2xl font-bold text-white">--°C</div>
+                        </div>
+                        <div class="industrial-card bg-industrial-800 p-4 rounded-lg">
+                            <div class="text-industrial-400 text-sm mb-1">Minimum</div>
+                            <div id="minTemp" class="text-2xl font-bold text-white">--°C</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center mb-4">
+                        <div class="gauge">
+                            <svg width="200" height="200" viewBox="0 0 200 200">
+                                <circle class="gauge-circle" cx="100" cy="100" r="90" />
+                                <circle id="gaugeProgress" class="gauge-progress" cx="100" cy="100" r="90" 
+                                        stroke-dasharray="0 565" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div id="gaugeValue" class="text-3xl font-bold text-white">--</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center text-industrial-400 text-sm">
+                        <i class="fas fa-thermometer-half mr-1"></i> Normal Range: 20°C - 35°C
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Log -->
+        <div class="industrial-card mb-8">
+            <div class="p-4 border-b border-industrial-700">
+                <h2 class="text-xl font-bold text-white">Temperature History</h2>
+            </div>
+            <div class="p-4">
+                <div class="flex justify-between mb-4">
+                    <div class="text-industrial-300">
+                        Last 20 readings
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="exportDataBtn" class="bg-industrial-700 hover:bg-industrial-600 text-white px-3 py-1 rounded text-sm">
+                            <i class="fas fa-download mr-1"></i> Export Data
+                        </button>
+                        <button id="stopRecordingBtn" class="bg-danger-600 hover:bg-danger-500 text-white px-3 py-1 rounded text-sm ml-2 hidden">
+                            <i class="fas fa-stop mr-1"></i> Stop Recording
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-industrial-700">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-industrial-400 uppercase tracking-wider">Timestamp</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-industrial-400 uppercase tracking-wider">Temperature</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-industrial-400 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-industrial-400 uppercase tracking-wider">Model</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-industrial-400 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody" class="divide-y divide-industrial-800">
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-industrial-500">
+                                    No temperature data recorded yet
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Real-time Chart -->
+        <div class="industrial-card mb-8">
+            <div class="p-4 border-b border-industrial-700">
+                <h2 class="text-xl font-bold text-white">Temperature Trend</h2>
+            </div>
+            <div class="p-4">
+                <canvas id="liveChart" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="dashboard-grid mb-8">
+            <div class="industrial-card">
+                <div class="p-4 border-b border-industrial-700">
+                    <h2 class="text-xl font-bold text-white">Model Status</h2>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center mb-4">
+                        <div class="mr-4">
+                            <div class="bg-industrial-700 rounded-full p-3">
+                                <i class="fas fa-robot text-industrial-300 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-industrial-300">Current Model</div>
+                            <div id="activeModelStatus" class="text-white font-bold text-lg">Gemini 1.5 Flash</div>
+                        </div>
+                    </div>
+                    <div class="bg-industrial-800 rounded-lg p-3">
+                        <div class="text-industrial-400 text-sm mb-1">Last Analysis Result</div>
+                        <div id="lastOcrResult" class="text-industrial-200 font-mono">Waiting for first capture...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="industrial-card">
+                <div class="p-4 border-b border-industrial-700">
+                    <h2 class="text-xl font-bold text-white">System Alerts</h2>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center mb-4">
+                        <div class="mr-4">
+                            <div class="bg-industrial-700 rounded-full p-3">
+                                <i class="fas fa-bell text-industrial-300 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-industrial-300">Alert Status</div>
+                            <div class="text-white font-bold text-lg">No Active Alerts</div>
+                        </div>
+                    </div>
+                    <div class="bg-industrial-800 rounded-lg p-3">
+                        <div class="text-industrial-400 text-sm mb-1">Notification Settings</div>
+                        <div class="text-industrial-200">Email alerts enabled for temperatures above 35°C</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="industrial-card">
+                <div class="p-4 border-b border-industrial-700">
+                    <h2 class="text-xl font-bold text-white">API Status</h2>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-center mb-4">
+                        <div class="mr-4">
+                            <div class="bg-industrial-700 rounded-full p-3">
+                                <i class="fas fa-plug text-industrial-300 text-2xl"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-industrial-300">Model API</div>
+                            <div id="apiStatus" class="text-white font-bold text-lg">Ready</div>
+                        </div>
+                    </div>
+                    <div class="bg-industrial-800 rounded-lg p-3">
+                        <div class="text-industrial-400 text-sm mb-1">Model Performance</div>
+                        <div id="modelPerformance" class="text-industrial-200">Gemini: Fast | Qwen: High Accuracy</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug Console -->
+        <div class="industrial-card mb-8">
+            <div class="p-4 border-b border-industrial-700">
+                <h2 class="text-xl font-bold text-white">Debug Console</h2>
+            </div>
+            <div class="p-4">
+                <div id="debugConsole" class="bg-black text-green-400 font-mono text-sm p-4 rounded h-64 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-industrial-500 text-sm pt-6 border-t border-industrial-800">
+            <p>ThermoScanAI - Industrial Machine Temperature Monitoring System | Multi-Model Analysis</p>
+            <p class="mt-2">© 2023 Industrial AI Solutions. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">System Settings</h3>
+                <button id="closeSettingsModal" class="text-industrial-400 hover:text-industrial-300">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-industrial-300 mb-2">Gemini API Key</label>
+                    <input type="password" id="geminiApiKey" placeholder="Your Gemini API Key" 
+                        class="w-full bg-industrial-700 border border-industrial-600 rounded p-3 mb-2 text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-industrial-300 mb-2">Hugging Face API Key (for Qwen)</label>
+                    <input type="password" id="huggingfaceApiKey" placeholder="Your Hugging Face API Key" 
+                        class="w-full bg-industrial-700 border border-industrial-600 rounded p-3 mb-2 text-white">
+                </div>
+                
+                <div>
+                    <label class="block text-industrial-300 mb-2">Temperature Thresholds</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-industrial-400 mb-1">Warning Threshold (°C)</label>
+                            <input type="number" id="warningThreshold" value="30" 
+                                class="w-full bg-industrial-700 border border-industrial-600 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-industrial-400 mb-1">Critical Threshold (°C)</label>
+                            <input type="number" id="criticalThreshold" value="35" 
+                                class="w-full bg-industrial-700 border border-industrial-600 rounded p-2 text-white">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button id="cancelSettings" class="px-4 py-2 rounded bg-industrial-600 hover:bg-industrial-500">
+                    Cancel
+                </button>
+                <button id="saveSettings" class="px-4 py-2 rounded bg-industrial-500 hover:bg-industrial-400">
+                    Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
