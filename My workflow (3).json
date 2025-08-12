@@ -1,0 +1,75 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "7d81e7c7-c256-4b61-bf83-19e9b7cbdcd1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -280,
+        20
+      ],
+      "id": "01f99e6b-3006-46ce-bef4-b5d9173ffa84",
+      "name": "Webhook",
+      "webhookId": "7d81e7c7-c256-4b61-bf83-19e9b7cbdcd1"
+    },
+    {
+      "parameters": {
+        "chatId": "1405330677",
+        "text": "=⚠️ Critical temperature detected. Immediate action required.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        20,
+        20
+      ],
+      "id": "81073453-b198-42a8-975b-3c89d727482d",
+      "name": "Send a text message",
+      "webhookId": "8f879cf3-bbc0-4676-b215-677ffda56448",
+      "credentials": {
+        "telegramApi": {
+          "id": "RpCpzQonnLpY7Wms",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "efd7c627-a330-4d9f-9061-49f852689cb8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2fb676740461de932f896f29b0957f08a6e2c2266bb84821d435a655f645b1ff"
+  },
+  "id": "EVl2BngmupiC8xmB",
+  "tags": [
+    {
+      "name": "lightning ai",
+      "id": "AXe3soX14rCeF2mI",
+      "createdAt": "2025-08-12T15:35:08.527Z",
+      "updatedAt": "2025-08-12T15:35:08.527Z"
+    }
+  ]
+}
