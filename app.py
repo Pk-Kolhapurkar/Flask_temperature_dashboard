@@ -1082,17 +1082,6 @@ def process_with_moondream(image_data, api_key):
             
     except Exception as e:
         print(f"Moondream processing error: {str(e)}")
-        
-        # If using free tier and API fails, provide a fallback simulated response
-        if api_key == 'free' or api_key == 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlfaWQiOiJjZjM4ODZkNS03ZWMxLTRiNzMtYWRiYS1kZWQ1ZjlmZTg2NWYiLCJvcmdfaWQiOiJLd3hCb1dybnY1cXAyd3VUM2FBU3h3RVVhQXZGTkhnMiIsImlhdCI6MTc1OTA0MjEyOCwidmVyIjoxfQ.YzitfL6z5ey19yufWc5KF3zpC5Iy3eypfK7A65JBsxw':
-            print("⚠️ Using fallback temperature simulation")
-            # Simulate a temperature reading between 20-40°C for demo purposes
-            import random
-            simulated_temp = round(random.uniform(20.0, 40.0), 1)
-            print(f"🌡️ Simulated temperature: {simulated_temp}°C")
-            return simulated_temp
-        
-        # For other API keys, re-raise the error
         raise ValueError(f"Moondream processing failed: {str(e)}")
 
 @app.route('/api/history')

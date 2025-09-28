@@ -1092,24 +1092,11 @@
                     
                 } catch (error) {
                    console.error("Processing error:", error);
+                   lastOcrResult.textContent = `Error: ${error.message}`;
+                   logDebug(`Processing error: ${error.message}`);
                    
-                   // Handle Moondream free tier specific errors
-                   if (currentModel === 'moondream' && error.message.includes('free')) {
-                       lastOcrResult.textContent = 'Moondream free tier temporarily unavailable. Using simulated temperature.';
-                       logDebug('Moondream free tier unavailable, using fallback simulation');
-                       
-                       // Generate a simulated temperature for demo purposes
-                       const simulatedTemp = Math.round((Math.random() * 20 + 20) * 10) / 10;
-                       updateTemperature(simulatedTemp, 'moondream', new Date().toISOString());
-                       lastOcrResult.textContent = `Simulated temperature: ${simulatedTemp}°C`;
-                       logDebug(`Fallback simulation: ${simulatedTemp}°C`);
-                   } else {
-                       lastOcrResult.textContent = `Error: ${error.message}`;
-                       logDebug(`Processing error: ${error.message}`);
-                       
-                       // Show user-friendly error message
-                       showAlert(`Analysis failed: ${error.message}`, 'error');
-                   }
+                   // Show user-friendly error message
+                   showAlert(`Analysis failed: ${error.message}`, 'error');
                 } finally {
                     processingOverlay.classList.add('hidden');
                 }
