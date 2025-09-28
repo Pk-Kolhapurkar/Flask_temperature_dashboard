@@ -1,4 +1,4 @@
 flask>=2.0.0
 pymongo
 requests
-moondream
+git+https://github.com/vikhyat/moondream.git
