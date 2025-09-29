@@ -1,4 +1,4 @@
-# Dockerfile for ThermoScan AI
+# Dockerfile for ThermoScan AI .
 FROM python:3.11-slim
 
 # Set environment variables
