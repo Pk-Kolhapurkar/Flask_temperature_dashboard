@@ -26,8 +26,8 @@ COPY app.py .
 COPY static ./static
 COPY templates ./templates
 
-# Initialize database
-RUN python -c "from app import init_db; init_db()"
+# Initialize database - FIXED FUNCTION NAME
+RUN python -c "from app import init_sqlite_db; init_sqlite_db()"
 
 # Expose the application port
 EXPOSE $PORT
