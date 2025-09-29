@@ -3,3 +3,5 @@ pymongo
 requests
 PyPI
 moondream
+gunicorn==21.2.0
+
