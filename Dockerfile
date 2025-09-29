@@ -1,4 +1,4 @@
-# Dockerfile for ThermoScan AI .
+# Dockerfile for ThermoScan AI
 FROM python:3.11-slim
 
 # Set environment variables
@@ -6,10 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PORT 8000
 
-# Install system dependencies
+# Install system dependencies including git
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
+    git \
     libsqlite3-dev && \
     rm -rf /var/lib/apt/lists/*
 
